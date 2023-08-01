@@ -1,0 +1,10 @@
+express 
+mongoose 
+dotenv
+bcryptjs
+
+
+dev dependencies
+    nodemon
+    concurrently
+    colors
