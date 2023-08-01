@@ -3,7 +3,8 @@ import asyncHandler from "./asyncHandler.js";
 import User from "../api/user/user.model.js";
 
 export const requireSignIn = asyncHandler(async (req, res, next) => {
-  let token = req.cookies.jwt_token;
+  let token;
+  token = req.cookies.jwt_token;
 
   if (!token) {
     res.status(401);
@@ -12,7 +13,7 @@ export const requireSignIn = asyncHandler(async (req, res, next) => {
 
   try {
     let decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = await User.findById(decoded.id).select("-password");
+    req.user = await User.findById(decoded.userId).select("-password");
     next();
   } catch (error) {
     res.status(401);

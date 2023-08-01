@@ -6,27 +6,31 @@ import User from "./user.model.js";
 // @route   POST /api/v1/users/login
 // @access  Public
 const login = asyncHandler(async (req, res) => {
-  // const { email, password } = req.body;
-  // res.send("passed the auth middleware");
-  // res.json({user: req.user});
-  // const user = await User.findOne({ email });
+  const { email, password } = req.body;
 
-  // if (user && user.matchPassword(password)) {
-  //   res.json({
-  //     _id: user._id,
-  //     name: user.name,
-  //     email: user.email,
-  //   });
-  // } else {
-  //   res.status(401);
-  //   throw new Error("Invalid credentials");
-  // }
+  const user = await User.findOne({ email });
+
+  if (user && user.matchPassword(password)) {
+    generateToken(res, user._id);
+
+    res.json({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+    });
+  } else {
+    res.status(401);
+    throw new Error("Invalid credentials");
+  }
 });
 
 // @desc    logout user & clear the cookies
 // @route   POST /api/v1/users/logout
 // @access  Private
-const logout = asyncHandler(async (req, res) => {});
+const logout = asyncHandler(async (req, res) => {
+  res.cookie("jwt_token", null, { expires: new Date(0), httpOnly: true });
+  res.status(200).json({ message: "user logged out" });
+});
 
 // @desc    Register a new user
 // @route   POST /api/v1/users
@@ -53,21 +57,16 @@ const registerUser = asyncHandler(async (req, res) => {
     password,
   });
 
-  let token = generateToken(newUser._id);
-  res.cookie("jwt_token", token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV !== "development",
-    sameSite: "strict",
-    maxAge: 1 * 24 * 60 * 60 * 1000,
-  });
-
   if (newUser) {
-    res.status(200);
+    res.status(201);
     res.json({
       _id: newUser._id,
       name: newUser.name,
       email: newUser.email,
+      isAdmin: newUser.isAdmin,
     });
+
+    generateToken(res, newUser._id);
   } else {
     res.status(400);
     throw new Error("Invalid user data received");
@@ -108,12 +107,11 @@ const updateUserProfile = asyncHandler(async (req, res) => {
 
     const updatedUser = await user.save();
 
-    res.json({
+    res.status(200).json({
       _id: updatedUser._id,
       name: updatedUser.name,
       email: updatedUser.email,
       isAdmin: updatedUser.isAdmin,
-      token: generateToken(updatedUser._id),
     });
   } else {
     res.status(404);
