@@ -1,25 +1,26 @@
 import asyncHandler from "../../middlewares/asyncHandler.js";
+import generateToken from "../../utils/generateToken.js";
 import User from "./user.model.js";
 
 // @desc    Auth user & get token
 // @route   POST /api/v1/users/login
 // @access  Public
 const login = asyncHandler(async (req, res) => {
-  const { email, password } = req.body;
+  // const { email, password } = req.body;
+  // res.send("passed the auth middleware");
+  // res.json({user: req.user});
+  // const user = await User.findOne({ email });
 
-  const user = await User.findOne({ email });
-
-  if (user && user.matchPassword(password)) {
-    res.json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      isAdmin: user.isAdmin,
-    });
-  } else {
-    res.status(401);
-    throw new Error("Invalid credentials");
-  }
+  // if (user && user.matchPassword(password)) {
+  //   res.json({
+  //     _id: user._id,
+  //     name: user.name,
+  //     email: user.email,
+  //   });
+  // } else {
+  //   res.status(401);
+  //   throw new Error("Invalid credentials");
+  // }
 });
 
 // @desc    logout user & clear the cookies
@@ -31,35 +32,46 @@ const logout = asyncHandler(async (req, res) => {});
 // @route   POST /api/v1/users
 // @access  Public
 const registerUser = asyncHandler(async (req, res) => {
-  console.log(req.body);
-  res.json(req.body);
-  // const { name, email, password } = req.body;
+  // 1- validate user input
+  // 2- validate if user is already registered
+  // 3- encrypt user password
+  // 4- create new user in database
+  // 5- create a signed JWT token
 
-  // const userExists = await User.findOne({ email });
+  const { name, email, password } = req.body;
 
-  // if (userExists) {
-  //   res.status(400);
-  //   throw new Error("User already exists");
-  // }
+  const userExists = await User.findOne({ email });
 
-  // const user = await User.create({
-  //   name,
-  //   email,
-  //   password,
-  // });
+  if (userExists) {
+    res.status(400);
+    throw new Error(`User ${name} already exists`);
+  }
 
-  // if (user) {
-  //   res.status(201).json({
-  //     _id: user._id,
-  //     name: user.name,
-  //     email: user.email,
-  //     isAdmin: user.isAdmin,
-  //     token: generateToken(user._id),
-  //   });
-  // } else {
-  //   res.status(400);
-  //   throw new Error("Invalid user data");
-  // }
+  const newUser = await User.create({
+    name,
+    email,
+    password,
+  });
+
+  let token = generateToken(newUser._id);
+  res.cookie("jwt_token", token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV !== "development",
+    sameSite: "strict",
+    maxAge: 1 * 24 * 60 * 60 * 1000,
+  });
+
+  if (newUser) {
+    res.status(200);
+    res.json({
+      _id: newUser._id,
+      name: newUser.name,
+      email: newUser.email,
+    });
+  } else {
+    res.status(400);
+    throw new Error("Invalid user data received");
+  }
 });
 
 // @desc    Get user profile

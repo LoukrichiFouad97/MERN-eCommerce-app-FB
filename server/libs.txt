@@ -2,6 +2,7 @@ express
 mongoose 
 dotenv
 bcryptjs
+cookie-parser
 
 
 dev dependencies
