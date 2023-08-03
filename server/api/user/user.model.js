@@ -8,10 +8,9 @@ const userSchema = new Schema(
       required: true,
     },
     email: { type: "string", required: true, unique: true },
-    password: { type: "string", required: true, minlength: 6 },
+    password: { type: "string", required: true, minlength: 6, select: false },
     isAdmin: { type: "boolean", required: true, default: false },
   },
-
   {
     timestamps: true,
   }
