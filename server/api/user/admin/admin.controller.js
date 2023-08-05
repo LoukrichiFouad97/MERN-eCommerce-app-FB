@@ -1,5 +1,5 @@
-import asyncHandler from "../../../middlewares/asyncHandler";
-import user from "../user.model.js";
+import asyncHandler from "../../../middlewares/asyncHandler.js";
+import User from "../user.model.js";
 
 // admin functionalities
 //  1- get all users
@@ -9,36 +9,51 @@ import user from "../user.model.js";
 
 // @desc    Get all users
 // @route   GET /api/v1/admin/users
-// @access  Private
-export const getAllUsers = asyncHandler((req, res) => {
-  res.json({
-    message: "test success",
-  });
+// @access  Private/Admin
+export const getAllUsers = asyncHandler(async (req, res) => {
+  const users = await User.find({});
+  res.status(200).json(users);
 });
 
-// @desc    Get all users
+// @desc    Get User By ID
 // @route   GET /api/v1/admin/users/:id
-// @access  Private
-export const getUserByID = asyncHandler((req, res) => {
-  res.json({
-    message: "test success",
-  });
+// @access  Private/Admin
+export const getUserByID = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.params.id);
+
+  if (user) {
+    res.status(200).json(user);
+  } else {
+    res.status(404);
+    throw new Error("User not found");
+  }
 });
 
-// @desc    Get all users
+// @desc    Delete User By ID
 // @route   POST /api/v1/admin/users/:id
-// @access  Private
-export const deleteUserByID = asyncHandler((req, res) => {
-  res.json({
-    message: "test success",
-  });
+// @access  Private/Admin
+export const deleteUserByID = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.params.id);
+
+  if (user) {
+    await user.remove();
+    res.json({ message: "User removed" });
+  } else {
+    res.status(404);
+    throw new Error("User not found");
+  }
 });
 
-// @desc    Get all users
+// @desc    Update User By ID
 // @route   PUT /api/v1/admin/users/:id
-// @access  Private
-export const updateUserByID = asyncHandler((req, res) => {
-  res.json({
-    message: "test success",
-  });
+// @access  Private/Admin
+export const updateUserByID = asyncHandler(async (req, res) => {
+  const user = await User.findByIdAndUpdate(req.params.id, req.body);
+
+  if (user) {
+    await user.save();
+    res.status(200).json(user);
+  } else {
+    res.status(404).json({ message: "User not found" });
+  }
 });

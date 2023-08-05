@@ -17,7 +17,7 @@ const userSchema = new Schema(
 );
 
 userSchema.methods.matchPassword = async function (enteredPassword) {
-  await bcrypt.compare(enteredPassword, this.password);
+  return await bcrypt.compare(enteredPassword, this.password);
 };
 
 // encrypt password before saving to database

@@ -8,7 +8,7 @@ import {
 
 const router = express.Router();
 
-router.get("/", adminController.getAllUsers);
+router.get("/", requireSignIn, isAdmin, adminController.getAllUsers);
 
 router
   .route("/:id")
